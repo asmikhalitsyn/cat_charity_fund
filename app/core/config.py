@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     first_superuser_password: Optional[str] = None
 
     class Config:
-        env_file = 'C:\\Users\\Andrey\\PycharmProjects\\cat_charity_fund\\app\core\.env'
+        env_file = '.env'
 
 
 settings = Settings()
