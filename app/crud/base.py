@@ -1,9 +1,11 @@
-from typing import Optional
+from typing import Optional, Union, List
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import User
+from app.models.charity_project import CharityProject
+from app.models.donation import Donation
 
 
 class CRUDBase:
@@ -34,15 +36,17 @@ class CRUDBase:
             self,
             obj_in,
             session: AsyncSession,
-            user: Optional[User] = None
+            user: Optional[User] = None,
+            commit: bool = True
     ):
         obj_in_data = obj_in.dict()
         if user is not None:
             obj_in_data['user_id'] = user.id
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
+        if commit:
+            await session.commit()
+            await session.refresh(db_obj)
         return db_obj
 
     async def update(
@@ -50,6 +54,7 @@ class CRUDBase:
             db_obj,
             obj_in,
             session: AsyncSession,
+            commit: bool = True
     ):
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.dict(exclude_unset=True)
@@ -58,8 +63,9 @@ class CRUDBase:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
         session.add(db_obj)
-        await session.commit()
-        await session.refresh(db_obj)
+        if commit:
+            await session.commit()
+            await session.refresh(db_obj)
         return db_obj
 
     async def remove(
@@ -70,3 +76,25 @@ class CRUDBase:
         await session.delete(db_obj)
         await session.commit()
         return db_obj
+
+    async def get_charity_project_by_id(self,
+                                        project_id: int,
+                                        session: AsyncSession,
+                                        ) -> Optional[CharityProject]:
+        db_project = await session.execute(
+            select(CharityProject).where(
+                CharityProject.id == project_id
+            )
+        )
+        return db_project.scalars().first()
+
+    async def get_not_full_invested_objects(
+            self,
+            session: AsyncSession,
+            obj_in
+    ) -> List[Union[CharityProject, Donation]]:
+        objects = await session.execute(
+            select(obj_in).where(obj_in.fully_invested == 0
+                                 ).order_by(obj_in.create_date)
+        )
+        return objects.scalars().all()

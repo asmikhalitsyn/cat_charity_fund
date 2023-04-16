@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List,Optional, Union
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,18 +20,6 @@ class CRUDCharityProject(CRUDBase):
         )
         db_project_id = db_project_id.scalars().first()
         return db_project_id
-
-    async def get_charity_project_by_id(self,
-                                        project_id: int,
-                                        session: AsyncSession,
-                                        ) -> Optional[CharityProject]:
-        db_project = await session.execute(
-            select(CharityProject).where(
-                CharityProject.id == project_id
-            )
-        )
-        db_project = db_project.scalars().first()
-        return db_project
 
 
 charity_project_crud = CRUDCharityProject(CharityProject)

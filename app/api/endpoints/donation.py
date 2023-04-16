@@ -19,12 +19,24 @@ router = APIRouter()
     response_model_exclude_none=True,
 )
 async def create_donation(
-    donation: DonationBase,
-    session: AsyncSession = Depends(get_async_session),
-    user: User = Depends(current_user),
+        donation: DonationBase,
+        session: AsyncSession = Depends(get_async_session),
+        user: User = Depends(current_user),
 ):
-    new_donation = await donation_crud.create(donation, session, user)
-    await investing_process(new_donation, CharityProject, session)
+    new_donation = await donation_crud.create(
+        donation,
+        session,
+        user,
+        commit=False
+    )
+    model_objects = await donation_crud.get_not_full_invested_objects(
+        session,
+        CharityProject
+    )
+    if model_objects:
+        session.add_all(investing_process(new_donation, model_objects))
+    await session.commit()
+    await session.refresh(new_donation)
     return new_donation
 
 
@@ -35,10 +47,9 @@ async def create_donation(
     dependencies=[Depends(current_superuser)],
 )
 async def get_all_donations(
-    session: AsyncSession = Depends(get_async_session),
+        session: AsyncSession = Depends(get_async_session),
 ):
-    all_donations = await donation_crud.get_multi(session)
-    return all_donations
+    return await donation_crud.get_multi(session)
 
 
 @router.get(
@@ -47,10 +58,9 @@ async def get_all_donations(
     response_model_exclude={'user_id'},
 )
 async def get_my_reservations(
-    session: AsyncSession = Depends(get_async_session),
-    user: User = Depends(current_user)
+        session: AsyncSession = Depends(get_async_session),
+        user: User = Depends(current_user)
 ):
-    donations = await donation_crud.get_by_user(
+    return await donation_crud.get_by_user(
         session=session, user=user
     )
-    return donations

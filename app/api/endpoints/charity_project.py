@@ -31,11 +31,16 @@ async def create_charity_project(
     session: AsyncSession = Depends(get_async_session),
 ):
     await check_name_duplicate(charity_project.name, session)
-    await charity_project_crud.get_project_id_by_name(
-        charity_project.name, session
+    new_project = await charity_project_crud.create(
+        charity_project,
+        session,
+        commit=False
     )
-    new_project = await charity_project_crud.create(charity_project, session)
-    await investing_process(new_project, Donation, session)
+    model_objects = await charity_project_crud.get_not_full_invested_objects(session, Donation)
+    if model_objects:
+        session.add_all(investing_process(new_project, model_objects))
+    await session.commit()
+    await session.refresh(new_project)
     return new_project
 
 
@@ -47,8 +52,7 @@ async def create_charity_project(
 async def get_all_charity_projects(
     session: AsyncSession = Depends(get_async_session),
 ):
-    all_projects = await charity_project_crud.get_multi(session)
-    return all_projects
+    return await charity_project_crud.get_multi(session)
 
 
 @router.patch(
@@ -71,8 +75,10 @@ async def update_charity_project(
         check_charity_project_invested_sum(project, obj_in.full_amount)
 
     charity_project = await charity_project_crud.update(
-        project, obj_in, session
+        project, obj_in, session, commit=False
     )
+    await session.commit()
+    await session.refresh(project)
     return charity_project
 
 
