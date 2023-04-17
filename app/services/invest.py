@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Union
 
-from app.models import CharityProject, Donation
+from app.models import CharityProject, Donation, InvestmentDate
 
 
 def close_donation_for_obj(obj_in: Union[CharityProject, Donation]):
@@ -11,19 +11,20 @@ def close_donation_for_obj(obj_in: Union[CharityProject, Donation]):
 
 
 def investing_process(
-        obj_in: Union[CharityProject, Donation],
-        model_add: List[Union[CharityProject, Donation]],
-) -> List[Union[CharityProject, Donation]]:
-    obj_in.invested_amount = obj_in.invested_amount or 0
+        target: Union[CharityProject, Donation],
+        sources: List[Union[CharityProject, Donation]],
+) -> List[InvestmentDate]:
+    target.invested_amount = target.invested_amount or 0
     count = 0
-    for balance in model_add:
+    for source in sources:
         donation = min(
-            balance.full_amount - balance.invested_amount,
-            obj_in.full_amount - obj_in.invested_amount
+            source.full_amount - source.invested_amount,
+            target.full_amount - target.invested_amount
         )
-        for project in [balance, obj_in]:
-            project.invested_amount += donation
-            if project.full_amount == project.invested_amount:
-                close_donation_for_obj(project)
+        for obj in [source, target]:
+            obj.invested_amount += donation
+            if obj.full_amount == obj.invested_amount:
+                obj.close_date = datetime.now()
+                obj.fully_invested = True
         count += 1
-    return model_add[:count]
+    return sources[:count]

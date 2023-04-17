@@ -64,7 +64,6 @@ SUPERUSER_PASSWORD=passwordsuperuser
 
 ```
 
-alembic init --template async alembic
 alembic revision --autogenerate -m "Comment"
 alembic upgrade head
 ```

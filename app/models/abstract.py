@@ -13,7 +13,7 @@ REPRESENTATION_BASE_CLASS = (
 )
 
 
-class AbstractBaseClass(Base):
+class InvestmentDate(Base):
     __abstract__ = True
     __table_args__ = (
         CheckConstraint('full_amount > 0'),

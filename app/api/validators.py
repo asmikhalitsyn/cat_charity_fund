@@ -53,7 +53,7 @@ async def check_charity_project_exists(
         project_id: int,
         session: AsyncSession,
 ):
-    project = await charity_project_crud.get_charity_project_by_id(
+    project = await charity_project_crud.get(
         project_id, session
     )
     if project is None:

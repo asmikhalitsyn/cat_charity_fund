@@ -27,8 +27,8 @@ router = APIRouter()
     dependencies=[Depends(current_superuser)],
 )
 async def create_charity_project(
-    charity_project: CharityProjectCreate,
-    session: AsyncSession = Depends(get_async_session),
+        charity_project: CharityProjectCreate,
+        session: AsyncSession = Depends(get_async_session),
 ):
     await check_name_duplicate(charity_project.name, session)
     new_project = await charity_project_crud.create(
@@ -36,7 +36,9 @@ async def create_charity_project(
         session,
         commit=False
     )
-    model_objects = await charity_project_crud.get_not_full_invested_objects(session, Donation)
+    model_objects = await charity_project_crud.get_not_full_invested_objects(
+        session, Donation
+    )
     if model_objects:
         session.add_all(investing_process(new_project, model_objects))
     await session.commit()
@@ -50,7 +52,7 @@ async def create_charity_project(
     response_model_exclude_none=True,
 )
 async def get_all_charity_projects(
-    session: AsyncSession = Depends(get_async_session),
+        session: AsyncSession = Depends(get_async_session),
 ):
     return await charity_project_crud.get_multi(session)
 
@@ -61,9 +63,9 @@ async def get_all_charity_projects(
     dependencies=[Depends(current_superuser)],
 )
 async def update_charity_project(
-    project_id: int,
-    obj_in: CharityProjectUpdate,
-    session: AsyncSession = Depends(get_async_session),
+        project_id: int,
+        obj_in: CharityProjectUpdate,
+        session: AsyncSession = Depends(get_async_session),
 ):
     project = await check_charity_project_exists(
         project_id, session
@@ -74,12 +76,9 @@ async def update_charity_project(
     if obj_in.full_amount is not None:
         check_charity_project_invested_sum(project, obj_in.full_amount)
 
-    charity_project = await charity_project_crud.update(
-        project, obj_in, session, commit=False
+    return await charity_project_crud.update(
+        project, obj_in, session
     )
-    await session.commit()
-    await session.refresh(project)
-    return charity_project
 
 
 @router.delete(
@@ -88,8 +87,8 @@ async def update_charity_project(
     dependencies=[Depends(current_superuser)],
 )
 async def delete_charity_project(
-    project_id: int,
-    session: AsyncSession = Depends(get_async_session),
+        project_id: int,
+        session: AsyncSession = Depends(get_async_session),
 ):
     project = await check_charity_project_exists(
         project_id, session

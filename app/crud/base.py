@@ -77,17 +77,6 @@ class CRUDBase:
         await session.commit()
         return db_obj
 
-    async def get_charity_project_by_id(self,
-                                        project_id: int,
-                                        session: AsyncSession,
-                                        ) -> Optional[CharityProject]:
-        db_project = await session.execute(
-            select(CharityProject).where(
-                CharityProject.id == project_id
-            )
-        )
-        return db_project.scalars().first()
-
     async def get_not_full_invested_objects(
             self,
             session: AsyncSession,

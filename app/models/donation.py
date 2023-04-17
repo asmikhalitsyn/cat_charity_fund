@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, Text
 
-from .abstract import AbstractBaseClass
+from .abstract import InvestmentDate
 
 
 REPRESENTATION_DONATION = (
@@ -10,7 +10,7 @@ REPRESENTATION_DONATION = (
 )
 
 
-class Donation(AbstractBaseClass):
+class Donation(InvestmentDate):
     user_id = Column(Integer, ForeignKey('user.id'))
     comment = Column(Text)
 
