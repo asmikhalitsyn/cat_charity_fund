@@ -1,6 +1,6 @@
 # Проект QRKot — это сервис для благотворительного фонда поддержки котиков
 
-## Автор: Михалицын А.С. ([misterio92](https://github.com/asmikhalitsyn)) 
+## Автор: Михалицын А.С. ([asmikhalitsyn](https://github.com/asmikhalitsyn)) 
 
 
 ## **Стек**
