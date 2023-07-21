@@ -6,6 +6,7 @@
 ## **Стек**
 
 [Python](https://www.python.org/)
+
 [FastApi](https://fastapi.tiangolo.com/).
 
 Клонировать репозиторий и перейти в него в командной строке:
